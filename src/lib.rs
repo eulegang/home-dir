@@ -94,7 +94,7 @@ where
 
 pub(crate) fn getent(name: &str) -> Result<PathBuf, Error> {
     let usr = User::from_name(name).or(Err(Error::MissingEntry))?;
-    let usr = usr.ok_or_else(|| Error::MissingEntry)?;
+    let usr = usr.ok_or(Error::MissingEntry)?;
 
     Ok(usr.dir)
 }
@@ -105,7 +105,7 @@ pub(crate) fn getenv() -> Option<PathBuf> {
 
 pub(crate) fn getent_current() -> Result<PathBuf, Error> {
     let usr = User::from_uid(Uid::current()).or(Err(Error::MissingEntry))?;
-    let usr = usr.ok_or_else(|| Error::MissingEntry)?;
+    let usr = usr.ok_or(Error::MissingEntry)?;
 
     Ok(usr.dir)
 }
