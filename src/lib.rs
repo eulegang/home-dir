@@ -7,6 +7,13 @@
 //!
 //! - ~`user` will expand to the user's home directory from the user database
 //!
+//! Example:
+//!
+//! ```
+//! use home_dir::HomeDirExt;
+//!
+//! let public_html = "~/public_html".expand_home().unwrap();
+//! ```
 
 use std::env;
 use std::path::{Component, Path, PathBuf};
@@ -21,8 +28,12 @@ mod tests;
 /// Error while expanding path
 pub enum Error {
     /// The user being looked up is not in the user database
-    #[error("the user does not have entry")]
-    MissingEntry,
+    #[error("the user {0} does not exist in the user database")]
+    MissingEntry(String),
+
+    /// Can't find name for current user.
+    #[error("the current user (numeric id {0}) does not exist in the user database")]
+    CurrentUserDoesNotExist(u32),
 }
 
 /// The expansion trait extension
@@ -93,8 +104,8 @@ where
 }
 
 pub(crate) fn getent(name: &str) -> Result<PathBuf, Error> {
-    let usr = User::from_name(name).or(Err(Error::MissingEntry))?;
-    let usr = usr.ok_or(Error::MissingEntry)?;
+    let usr = User::from_name(name).map_err(|_| Error::MissingEntry(name.to_string()))?;
+    let usr = usr.ok_or_else(|| Error::MissingEntry(name.to_string()))?;
 
     Ok(usr.dir)
 }
@@ -104,8 +115,9 @@ pub(crate) fn getenv() -> Option<PathBuf> {
 }
 
 pub(crate) fn getent_current() -> Result<PathBuf, Error> {
-    let usr = User::from_uid(Uid::current()).or(Err(Error::MissingEntry))?;
-    let usr = usr.ok_or(Error::MissingEntry)?;
+    let uid = Uid::current();
+    let usr = User::from_uid(uid).map_err(|_| Error::CurrentUserDoesNotExist(uid.as_raw()))?;
+    let usr = usr.ok_or_else(|| Error::CurrentUserDoesNotExist(uid.as_raw()))?;
 
     Ok(usr.dir)
 }

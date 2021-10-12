@@ -39,6 +39,6 @@ fn test_expand_nonexpansion() {
 fn test_missing() {
     assert!(matches!(
         getent("_foobar_").unwrap_err(),
-        Error::MissingEntry
+        Error::MissingEntry(_)
     ));
 }
