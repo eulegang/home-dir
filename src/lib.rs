@@ -7,6 +7,13 @@
 //!
 //! - ~`user` will expand to the user's home directory from the user database
 //!
+//! Example:
+//!
+//! ```
+//! use home_dir::HomeDirExt;
+//!
+//! let public_html = "~/public_html".expand_home().unwrap();
+//! ```
 
 use std::env;
 use std::path::{Component, Path, PathBuf};
